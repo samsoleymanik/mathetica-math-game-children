@@ -1,7 +1,8 @@
-<div class="footerNote">
-  © 2026 Sam Soleymani. All rights reserved. • Tip: if voice does not start right away, tap anywhere once so the browser allows audio.
-</div>
-<!DOCTYPE html>
+<!--
+© 2026 Sam Soleymani. All rights reserved.
+Math Adventure Galaxy
+Unauthorized copying, modification, distribution, or commercial use prohibited without written permission.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -251,7 +252,17 @@
     .answerBtn { min-height:72px; font-size:32px; font-weight:700; border-radius:24px; border:1px solid rgba(255,255,255,.18); color:white; background: linear-gradient(135deg, rgba(123,232,255,.28), rgba(255,124,231,.22)); box-shadow: 0 12px 24px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.22); cursor:pointer; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }
     .feedback { min-height:44px; text-align:center; font-size:30px; font-weight:700; margin-top:18px; }
     .good { color:var(--green); } .bad { color:var(--red); }
-    .footerNote { margin-top:12px; color:var(--muted); font-size:14px; text-align:center; }
+    .footerNote {
+      margin-top: 14px;
+      color: rgba(248,251,255,.96);
+      font-size: 14px;
+      text-align: center;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 8px 20px rgba(0,0,0,.16);
+    }
 
     @media (max-width:920px) {
       .dashboard { grid-template-columns:1fr; }
@@ -360,7 +371,10 @@
       <div class="stage" id="stage"></div>
       <div class="answers" id="answers"></div>
       <div class="feedback" id="feedback"></div>
-      <div class="footerNote">Tip: if voice does not start right away, tap anywhere once so the browser allows audio.</div>
+      <div class="footerNote">
+  <strong>© 2026 Sam Soleymani. All rights reserved.</strong><br>
+  Tip: if voice does not start right away, tap anywhere once so the browser allows audio.
+</div>
     </div>
   </div>
 
