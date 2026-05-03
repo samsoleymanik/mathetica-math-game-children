@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Adventure Galaxy</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@600;700&display=swap');
+
+    :root {
+      --text: #f8fbff;
+      --muted: #d4e3ff;
+      --cyan: #7be8ff;
+      --pink: #ff7ce7;
+      --yellow: #ffe57c;
+      --green: #77ffb9;
+      --red: #ff8e99;
+      --shadow: 0 24px 80px rgba(0,0,0,.34);
+      --shadow-soft: 0 14px 32px rgba(0,0,0,.22);
+      --radius-xl: 34px;
+      --panel-border: 1px solid rgba(255,255,255,.16);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: "Fredoka", system-ui, sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(123,232,255,.18), transparent 14%),
+        radial-gradient(circle at 82% 18%, rgba(255,124,231,.15), transparent 18%),
+        linear-gradient(180deg, #0a1530 0%, #091426 42%, #07111f 100%);
+    }
+
+    button, input, select { font: inherit; }
+
+    .world { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .sky { position: absolute; inset: 0; transition: background 0.7s ease; }
+
+    .world.forest .sky {
+      background:
+        radial-gradient(circle at 18% 15%, rgba(255,242,177,.30), transparent 12%),
+        radial-gradient(circle at 84% 18%, rgba(255,255,255,.12), transparent 18%),
+        linear-gradient(180deg, #89dcff 0%, #61baff 26%, #355fc9 66%, #142745 100%);
+    }
+    .world.autumn .sky {
+      background:
+        radial-gradient(circle at 18% 15%, rgba(255,222,155,.30), transparent 12%),
+        radial-gradient(circle at 84% 18%, rgba(255,255,255,.10), transparent 18%),
+        linear-gradient(180deg, #ffd9b0 0%, #ffab79 26%, #93577d 64%, #311f4a 100%);
+    }
+    .world.garden .sky {
+      background:
+        radial-gradient(circle at 18% 15%, rgba(255,253,190,.24), transparent 12%),
+        radial-gradient(circle at 84% 18%, rgba(255,255,255,.10), transparent 18%),
+        linear-gradient(180deg, #99f7ff 0%, #65c9ff 28%, #5a78ff 66%, #1a3c73 100%);
+    }
+    .world.farm .sky {
+      background:
+        radial-gradient(circle at 18% 15%, rgba(255,248,187,.24), transparent 12%),
+        radial-gradient(circle at 84% 18%, rgba(255,255,255,.10), transparent 18%),
+        linear-gradient(180deg, #aef0ff 0%, #6fd0ff 28%, #4f8fe8 66%, #183962 100%);
+    }
+    .world.jungle .sky {
+      background:
+        radial-gradient(circle at 18% 15%, rgba(255,241,155,.18), transparent 12%),
+        radial-gradient(circle at 84% 18%, rgba(255,255,255,.08), transparent 18%),
+        linear-gradient(180deg, #64d8ca 0%, #2891aa 30%, #155c70 66%, #0a2436 100%);
+    }
+
+    .sun {
+      position: absolute; top: 48px; left: 66px; width: 132px; height: 132px; border-radius: 50%;
+      background: radial-gradient(circle, #fff9c9 0%, #ffe176 44%, rgba(255,225,118,.18) 73%, transparent 74%);
+      box-shadow: 0 0 65px rgba(255,221,118,.36);
+      animation: sunFloat 8s ease-in-out infinite;
+    }
+    @keyframes sunFloat { 0%,100% { transform: translateY(0px);} 50% { transform: translateY(10px);} }
+
+    .cloud { position: absolute; background: rgba(255,255,255,.22); border-radius: 999px; filter: blur(1px); }
+    .cloud::before, .cloud::after { content:""; position:absolute; background:inherit; border-radius:inherit; }
+    .cloud1 { width:170px; height:50px; top:88px; left:-220px; animation: cloudMove 40s linear infinite; }
+    .cloud1::before { width:78px; height:78px; left:24px; top:-28px; }
+    .cloud1::after { width:94px; height:94px; right:18px; top:-38px; }
+    .cloud2 { width:220px; height:58px; top:150px; left:-280px; opacity:.8; animation: cloudMove 50s linear infinite 8s; }
+    .cloud2::before { width:84px; height:84px; left:28px; top:-28px; }
+    .cloud2::after { width:108px; height:108px; right:24px; top:-48px; }
+    @keyframes cloudMove { from { transform: translateX(0);} to { transform: translateX(calc(100vw + 520px));} }
+
+    .sparkles,.orbs { position:absolute; inset:0; }
+    .sparkle,.orb { position:absolute; border-radius:50%; }
+    .sparkle { background: radial-gradient(circle, #fff, #c3f7ff 58%, transparent 72%); opacity:.75; animation: twinkle 2.8s ease-in-out infinite; }
+    .orb { background: radial-gradient(circle, rgba(255,255,255,.38), rgba(123,232,255,.18) 55%, transparent 72%); filter:blur(2px); animation: orbFloat 12s ease-in-out infinite; }
+    @keyframes twinkle { 0%,100% { transform: scale(.75); opacity:.35; } 50% { transform: scale(1.42); opacity:.95; } }
+    @keyframes orbFloat { 0%,100% { transform: translateY(0); opacity:.18; } 50% { transform: translateY(-18px); opacity:.34; } }
+
+    .hill { position:absolute; left:-5%; width:110%; border-radius:50%; filter: blur(.3px); }
+    .hill.back { bottom:115px; height:230px; background: linear-gradient(180deg, rgba(67,170,116,.82), rgba(24,72,52,.95)); }
+    .hill.front { bottom:-32px; height:310px; background: linear-gradient(180deg, rgba(28,104,74,.96), rgba(8,31,24,1)); }
+    .world.autumn .hill.back { background: linear-gradient(180deg, rgba(181,106,50,.84), rgba(84,42,36,.96)); }
+    .world.autumn .hill.front { background: linear-gradient(180deg, rgba(133,62,32,.96), rgba(46,20,24,1)); }
+    .world.garden .hill.back { background: linear-gradient(180deg, rgba(84,177,90,.84), rgba(36,93,56,.97)); }
+    .world.garden .hill.front { background: linear-gradient(180deg, rgba(32,118,72,.97), rgba(13,42,28,1)); }
+    .world.farm .hill.back { background: linear-gradient(180deg, rgba(152,190,96,.84), rgba(69,96,49,.97)); }
+    .world.farm .hill.front { background: linear-gradient(180deg, rgba(92,133,55,.97), rgba(28,47,21,1)); }
+    .world.jungle .hill.back { background: linear-gradient(180deg, rgba(28,118,87,.86), rgba(10,55,45,.97)); }
+    .world.jungle .hill.front { background: linear-gradient(180deg, rgba(15,90,63,.98), rgba(6,30,25,1)); }
+
+    .scene { position:absolute; inset:0; }
+    .tree,.palm,.flower,.reed,.bush,.animal,.butterfly,.leaf { position:absolute; }
+    .tree .trunk { width:18px; height:108px; background:#5c3926; border-radius:12px; margin:auto; }
+    .tree .top { width:102px; height:102px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #b8ffd1, #3ab075 72%); position:absolute; left:-41px; top:-50px; box-shadow: 0 0 22px rgba(82,255,156,.15); }
+    .tree.small { transform: scale(.82); } .tree.large { transform: scale(1.18); }
+    .world.autumn .tree .top { background: radial-gradient(circle at 30% 30%, #ffe38b, #ff9752 56%, #cd463c 82%); box-shadow: 0 0 20px rgba(255,170,96,.13); }
+    .palm .trunk { width:16px; height:112px; background:#6a4b2d; border-radius:12px; }
+    .palm .leaf1,.palm .leaf2,.palm .leaf3,.palm .leaf4,.palm .leaf5 { position:absolute; width:90px; height:18px; background: linear-gradient(90deg, #8effc4, #17956d); border-radius:999px; transform-origin:left center; }
+    .palm .leaf1 { left:6px; top:-2px; transform:rotate(-40deg);} .palm .leaf2 { left:7px; top:16px; transform:rotate(-15deg);} .palm .leaf3 { left:7px; top:32px; transform:rotate(12deg);} .palm .leaf4 { left:-76px; top:3px; transform:rotate(210deg);} .palm .leaf5 { left:-76px; top:24px; transform:rotate(190deg);}
+    .flower { font-size:32px; animation:sway 3.6s ease-in-out infinite; }
+    .reed { width:4px; height:58px; background: linear-gradient(#b8ffb7, #469460); border-radius:999px; transform-origin:bottom center; animation:sway 3.2s ease-in-out infinite; }
+    .bush { width:92px; height:54px; border-radius:50px; background: radial-gradient(circle at 30% 30%, #abffc8, #207b56 72%); box-shadow:0 0 16px rgba(82,255,156,.1); }
+    .animal { font-size:42px; animation: animalBob 2.8s ease-in-out infinite; filter: drop-shadow(0 8px 8px rgba(0,0,0,.25)); }
+    .butterfly { font-size:28px; animation: butterflyFly 13s linear infinite; opacity:.92; }
+    .leaf { font-size:24px; animation: leafFall 9s linear infinite; opacity:.78; }
+    @keyframes sway { 0%,100% { transform: rotate(-4deg);} 50% { transform: rotate(5deg);} }
+    @keyframes animalBob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-6px);} }
+    @keyframes butterflyFly { 0% { transform: translate(-10vw,0);} 25% { transform: translate(25vw,-26px);} 50% { transform: translate(55vw,8px);} 75% { transform: translate(85vw,-22px);} 100% { transform: translate(120vw,0);} }
+    @keyframes leafFall { 0% { transform: translateY(-20vh) translateX(0) rotate(0deg);} 100% { transform: translateY(110vh) translateX(120px) rotate(360deg);} }
+
+    .startOverlay { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:24px; background: rgba(4,8,18,.50); backdrop-filter: blur(18px); }
+    .startPanel { width:min(980px,100%); background: linear-gradient(145deg, rgba(255,255,255,.19), rgba(255,255,255,.07)); border:var(--panel-border); border-radius:36px; padding:30px; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+    .startPanel::after { content:""; position:absolute; width:280px; height:280px; right:-80px; top:-80px; border-radius:50%; background: radial-gradient(circle, rgba(123,232,255,.18), transparent 70%); pointer-events:none; }
+    .startTitle { margin:0 0 10px; font-family:"Baloo 2","Fredoka",sans-serif; font-size:clamp(34px,4vw,60px); line-height:1.03; letter-spacing:-.5px; background: linear-gradient(90deg, var(--cyan), #fff, var(--pink)); -webkit-background-clip:text; color:transparent; }
+    .startText { color:var(--muted); font-size:18px; max-width:760px; margin-bottom:20px; }
+    .levelGrid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-top:18px; }
+    .levelCard { padding:20px; border-radius:24px; border:1px solid rgba(255,255,255,.16); background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06)); cursor:pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; box-shadow: 0 10px 25px rgba(0,0,0,.20); }
+    .levelCard:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(0,0,0,.25); }
+    .levelCard.selected { border-color: rgba(123,232,255,.62); box-shadow: 0 0 0 3px rgba(123,232,255,.18), 0 18px 34px rgba(0,0,0,.28); background: linear-gradient(135deg, rgba(123,232,255,.22), rgba(255,124,231,.14)); }
+    .levelName { font-size:24px; font-weight:700; margin-bottom:8px; }
+    .levelDesc { font-size:16px; color:var(--muted); line-height:1.35; }
+    .startActions { margin-top:22px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .startButton,.primaryBtn,.ghostBtn { border:none; border-radius:18px; padding:16px 22px; font-size:18px; font-weight:700; cursor:pointer; transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease; }
+    .startButton,.primaryBtn { color:#071120; background: linear-gradient(90deg, var(--yellow), #fff3b3); box-shadow: 0 12px 25px rgba(255,228,122,.28); }
+    .ghostBtn { color:white; background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.14); box-shadow:var(--shadow-soft); }
+    .startButton:hover,.primaryBtn:hover,.ghostBtn:hover,.toolbar button:hover,.answerBtn:hover { transform: translateY(-2px) scale(1.02); }
+    .startButton:disabled { opacity:.45; cursor:not-allowed; }
+
+    .app { position:relative; z-index:2; max-width:1240px; margin:auto; padding:20px; }
+    .dashboard { display:grid; grid-template-columns: minmax(0,1.5fr) minmax(280px,.9fr); gap:18px; align-items:stretch; }
+    .card { background: linear-gradient(135deg, rgba(255,255,255,.20), rgba(255,255,255,.08)); border:var(--panel-border); border-radius:var(--radius-xl); padding:20px; box-shadow: 0 18px 60px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 20px rgba(255,255,255,.05); backdrop-filter: blur(18px) saturate(135%); }
+    .hero { position:relative; overflow:hidden; min-height:180px; background: linear-gradient(135deg, rgba(9,18,38,.72), rgba(24,38,72,.56)); }
+    .hero::after { content:""; position:absolute; inset:auto -100px -120px auto; width:300px; height:300px; border-radius:50%; background: radial-gradient(circle, rgba(255,124,231,.16), transparent 68%); pointer-events:none; }
+    .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background: linear-gradient(90deg, rgba(123,232,255,.16), rgba(255,124,231,.12)); border:1px solid rgba(255,255,255,.12); color:#eff8ff; font-size:14px; margin-bottom:10px; }
+    h1 { margin:0; font-family:"Baloo 2","Fredoka",sans-serif; font-size:clamp(36px,5vw,66px); line-height:.97; letter-spacing:-.8px; color:#f8fdff; text-shadow: 0 0 18px rgba(123,232,255,.22), 0 2px 16px rgba(0,0,0,.28); }
+    .subtitle { margin-top:10px; color:rgba(244,249,255,.94); font-size:18px; max-width:760px; line-height:1.4; }
+    .heroMeta { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+    .miniPill { padding:10px 14px; border-radius:999px; background: linear-gradient(135deg, rgba(8,18,36,.46), rgba(255,255,255,.08)); border:1px solid rgba(255,255,255,.16); font-size:14px; color:#f4fbff; }
+    .stats { display:grid; grid-template-columns: repeat(2, minmax(110px,1fr)); gap:14px; align-content:start; }
+    .statCard { border-radius:24px; padding:18px; background: linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.06)); border:1px solid rgba(255,255,255,.12); box-shadow:var(--shadow-soft); min-height:110px; }
+    .statLabel { font-size:14px; color:var(--muted); margin-bottom:8px; }
+    .statValue { font-size:34px; font-weight:700; line-height:1; }
+    .statWide { grid-column:1 / -1; min-height:auto; }
+    .levelBadge { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background: linear-gradient(90deg, rgba(123,232,255,.18), rgba(255,124,231,.16)); font-size:15px; color:#f5fbff; border:1px solid rgba(255,255,255,.12); }
+
+    .toolbar { margin:18px 0; display:grid; grid-template-columns:1fr; gap:14px; }
+    .toolbarRow { display:flex; gap:12px; flex-wrap:wrap; }
+    .toolbar button { border:1px solid rgba(255,255,255,.14); border-radius:18px; padding:14px 18px; font-size:16px; font-weight:700; color:#fff; cursor:pointer; background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06)); box-shadow: 0 10px 24px rgba(0,0,0,.22); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+    .toolbar button.active { background: linear-gradient(135deg, rgba(123,232,255,.32), rgba(255,124,231,.24)); border-color: rgba(123,232,255,.5); box-shadow: 0 0 0 3px rgba(123,232,255,.14), 0 14px 30px rgba(0,0,0,.26); }
+    .toolbar button.secondaryOn { border-color: rgba(255,229,124,.38); background: linear-gradient(135deg, rgba(255,229,124,.20), rgba(255,255,255,.08)); }
+
+    .game { min-height:660px; position:relative; overflow:hidden; }
+    .game::after { content:""; position:absolute; inset:auto auto -140px -100px; width:320px; height:320px; border-radius:50%; background: radial-gradient(circle, rgba(123,232,255,.12), transparent 70%); pointer-events:none; }
+    .game::before { content:""; position:absolute; top:-120px; right:-80px; width:280px; height:280px; border-radius:50%; background: radial-gradient(circle, rgba(255,124,231,.14), transparent 72%); pointer-events:none; }
+
+    .guideArea { display:grid; grid-template-columns:180px 1fr; gap:16px; align-items:start; margin-bottom:18px; }
+    .mascotShell { display:flex; justify-content:center; }
+    .mascotOrb { width:156px; height:156px; border-radius:50%; display:grid; place-items:center; background: radial-gradient(circle at 35% 25%, rgba(255,255,255,.84), rgba(255,255,255,.18) 18%, transparent 21%), radial-gradient(circle at center, #fff 0%, #d7fbff 26%, #8ebeff 66%, #243e9a 100%); box-shadow: 0 0 34px rgba(123,232,255,.42), inset 0 0 22px rgba(255,255,255,.12); position:relative; }
+    .mascotHalo { position:absolute; inset:-8px; border-radius:50%; border:2px solid rgba(123,232,255,.18); animation: haloPulse 2.6s ease-in-out infinite; }
+    @keyframes haloPulse { 0%,100% { transform: scale(1); opacity:.55; } 50% { transform: scale(1.06); opacity:.15; } }
+
+    .dog { width:128px; height:96px; position:relative; transform:scaleX(-1); animation: dogIdle 2.6s ease-in-out infinite; transform-origin:center; }
+    @keyframes dogIdle { 0%,100% { translate:0 0; } 50% { translate:0 -4px; } }
+    .dog.lookRight { transform:scaleX(-1); } .dog.lookLeft { transform:scaleX(1); }
+    .dog .tail { position:absolute; left:-10px; top:42px; width:26px; height:10px; background:#b87944; border-radius:10px; transform-origin:right center; animation: tailSlow 1.2s ease-in-out infinite; z-index:0; }
+    @keyframes tailSlow { 0%,100% { transform: rotate(-12deg);} 50% { transform: rotate(10deg);} }
+    @keyframes tailFast { 0%,100% { transform: rotate(-26deg);} 50% { transform: rotate(22deg);} }
+    .dog.happy .tail { animation: tailFast .25s ease-in-out infinite; }
+    .dog .ear { position:absolute; width:34px; height:42px; background:#7b4c2d; border-radius:18px 18px 12px 12px; top:6px; z-index:0; }
+    .dog .ear.back { left:18px; transform: rotate(-16deg);} .dog .ear.front { left:48px; transform: rotate(10deg);} 
+    .dog .head { position:absolute; left:10px; top:16px; width:82px; height:68px; background:#f3c998; border-radius:40px 44px 36px 34px; border:3px solid rgba(110,70,42,.28); z-index:2; box-shadow: inset 0 -6px 0 rgba(255,255,255,.14); }
+    .dog .patch { position:absolute; left:8px; top:12px; width:30px; height:26px; background:#d69b60; border-radius:18px 18px 14px 14px; opacity:.9; }
+    .dog .eye { position:absolute; width:8px; height:12px; background:#2f1d15; border-radius:50%; top:24px; animation: blink 5s infinite; transform-origin:center center; transition: transform .18s ease; }
+    .dog .eye.back { left:26px; opacity:.85; } .dog .eye.front { left:50px; }
+    .dog.speaking .eye.front,.dog.speaking .eye.back { transform: translateX(1px); }
+    @keyframes blink { 0%,46%,48%,100% { transform: scaleY(1);} 47% { transform: scaleY(.12);} }
+    .dog .cheek { position:absolute; width:11px; height:8px; background: rgba(255,138,150,.55); border-radius:50%; top:38px; }
+    .dog .cheek.left { left:24px; } .dog .cheek.right { left:52px; }
+    .dog .snout { position:absolute; right:-12px; top:24px; width:44px; height:30px; background:#ffe3c4; border-radius:20px 22px 20px 20px; border:2px solid rgba(110,70,42,.18); z-index:3; }
+    .dog .nose { position:absolute; right:7px; top:8px; width:11px; height:8px; background:#2e1b16; border-radius:50%; }
+    .dog .mouth { position:absolute; left:11px; top:15px; width:18px; height:9px; border-bottom:4px solid #5c3c2b; border-radius:0 0 16px 16px; transform-origin:center top; }
+    .dog .tongue { position:absolute; left:16px; top:22px; width:8px; height:0; background:#ff7b92; border-radius:0 0 8px 8px; }
+    .dog.neutral .mouth { width:18px; height:8px; }
+    .dog.happy .mouth { width:28px; height:15px; left:7px; border-bottom:5px solid #5c3c2b; border-radius:0 0 24px 24px; }
+    .dog.happy .tongue { height:8px; }
+    .dog.happy .eye { height:5px; border-radius:20px 20px 0 0; top:27px; animation:none; }
+    .dog.speaking .mouth { animation: dogTalk .23s infinite ease-in-out; }
+    .dog.speaking .tongue { height:6px; }
+    @keyframes dogTalk { 0%,100% { transform: scaleY(1);} 50% { transform: scaleY(1.45);} }
+    .dog.celebrate { animation: dogCelebrate .55s ease; }
+    @keyframes dogCelebrate { 0% { transform: scaleX(-1) translateY(0) scale(1);} 35% { transform: scaleX(-1) translateY(-8px) scale(1.08) rotate(-4deg);} 70% { transform: scaleX(-1) translateY(-2px) scale(1.05) rotate(4deg);} 100% { transform: scaleX(-1) translateY(0) scale(1);} }
+
+    .speechWrap { position:relative; min-height:126px; }
+    .speechBubble { position:relative; min-height:126px; border-radius:34px; padding:22px 24px; background: radial-gradient(circle at 24% 22%, rgba(255,255,255,.92), rgba(255,255,255,.70) 30%, transparent 31%), linear-gradient(135deg, #ffffff, #ebfcff); color:#0c1a2f; box-shadow:0 0 26px rgba(255,255,255,.12), 0 18px 36px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.75); overflow:hidden; }
+    .speechBubble::before { content:""; position:absolute; left:-14px; top:60px; width:32px; height:32px; background:#f1fcff; border-radius:0 0 0 100%; transform: rotate(45deg); }
+    .speechLabel { display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border-radius:999px; background: linear-gradient(90deg, rgba(123,232,255,.18), rgba(255,124,231,.14)); font-size:13px; font-weight:700; color:#17304e; margin-bottom:10px; }
+    .speechText { font-size: clamp(22px, 2.2vw, 28px); line-height:1.55; font-weight:700; letter-spacing:.1px; }
+    .word { display:inline-block; margin-right:8px; opacity:0; transform: translate(-10px,8px) scale(.92); }
+    .word.show { animation: wordPop .28s forwards ease; }
+    @keyframes wordPop { to { opacity:1; transform: translate(0,0) scale(1);} }
+    .voiceMeta { margin-top:10px; color:#29445f; font-size:13px; font-weight:600; }
+
+    .stage { min-height:384px; border-radius:34px; padding:24px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:22px; background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)), rgba(10,18,36,.18); border:1px solid rgba(255,255,255,.14); box-shadow: inset 0 0 42px rgba(123,232,255,.05); overflow:hidden; position:relative; }
+    .stage::after { content:""; position:absolute; inset:auto -70px -80px auto; width:200px; height:200px; border-radius:50%; background: radial-gradient(circle, rgba(255,124,231,.08), transparent 72%); pointer-events:none; }
+    .problemTitle { font-size:clamp(34px,5vw,58px); font-weight:700; color:#fff; text-shadow: 0 0 18px rgba(123,232,255,.42); }
+    .exampleCard { width:min(900px,100%); padding:24px; border-radius:30px; background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.08)); border:1px solid rgba(255,255,255,.18); box-shadow:0 14px 30px rgba(0,0,0,.20); }
+    .exampleTitle { font-size:34px; font-weight:700; margin-bottom:10px; }
+    .exampleText { font-size:20px; line-height:1.45; color:var(--muted); margin-top:14px; }
+    .exampleFooter { margin-top:18px; display:flex; justify-content:center; }
+    .boxes { display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap; }
+    .mathSign { font-size:60px; font-weight:700; color:var(--yellow); text-shadow: 0 0 20px rgba(255,231,122,.62); }
+
+    .box { background: linear-gradient(145deg, rgba(255,255,255,.28), rgba(255,255,255,.10)); border:1px solid rgba(255,255,255,.30); border-radius:30px; min-width:190px; min-height:176px; padding:16px; text-align:center; box-shadow: 0 0 30px rgba(123,232,255,.16), inset 0 1px 0 rgba(255,255,255,.24), inset 0 0 24px rgba(255,255,255,.08); backdrop-filter: blur(14px) saturate(135%); transition: transform .18s ease, box-shadow .18s ease, opacity .22s ease; }
+    .box:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(123,232,255,.18), inset 0 0 24px rgba(255,255,255,.08); }
+    .faintBox { opacity:.98; filter:none; }
+    .numberLabel { font-size:46px; font-weight:700; color:#fff; margin-bottom:10px; text-shadow: 0 0 14px rgba(123,232,255,.62); }
+    .objects { display:flex; flex-wrap:wrap; justify-content:center; gap:9px; font-size:39px; }
+    .object { display:inline-block; filter: drop-shadow(0 0 5px rgba(255,255,255,.62)) drop-shadow(0 7px 5px rgba(0,0,0,.35)); animation: glowPulse 1.9s infinite ease-in-out; transition: opacity .25s ease, filter .25s ease, transform .25s ease; }
+    .removeTarget { transition: opacity .22s ease, transform .22s ease, filter .22s ease; }
+    .sourceRemoved { opacity:0; transform: scale(.52); filter: blur(2px); }
+    .subTarget { transition: opacity .22s ease, transform .22s ease; opacity:1; filter:none; }
+    .hiddenTarget { opacity:0; transform: scale(.55); }
+    .flyClone { position:fixed; z-index:9999; pointer-events:none; font-size:39px; filter: drop-shadow(0 0 5px rgba(255,255,255,.62)) drop-shadow(0 7px 5px rgba(0,0,0,.35)); transition: transform .68s ease, opacity .68s ease; }
+    @keyframes glowPulse { 0%,100% { transform: scale(1);} 50% { transform: scale(1.12);} }
+
+    .answers { margin-top:24px; display:grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap:14px; }
+    .answerBtn { min-height:72px; font-size:32px; font-weight:700; border-radius:24px; border:1px solid rgba(255,255,255,.18); color:white; background: linear-gradient(135deg, rgba(123,232,255,.28), rgba(255,124,231,.22)); box-shadow: 0 12px 24px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.22); cursor:pointer; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }
+    .feedback { min-height:44px; text-align:center; font-size:30px; font-weight:700; margin-top:18px; }
+    .good { color:var(--green); } .bad { color:var(--red); }
+    .footerNote { margin-top:12px; color:var(--muted); font-size:14px; text-align:center; }
+
+    @media (max-width:920px) {
+      .dashboard { grid-template-columns:1fr; }
+      .stats { grid-template-columns: repeat(3, minmax(100px,1fr)); }
+      .statWide { grid-column: span 3; }
+    }
+    @media (max-width:760px) {
+      .app { padding:16px; }
+      .guideArea { grid-template-columns:1fr; }
+      .mascotShell { justify-content:center; }
+      .speechBubble::before { left:22px; top:-10px; transform: rotate(135deg); }
+      .speechText { font-size:22px; }
+      .box { min-width:150px; }
+      .stats { grid-template-columns: repeat(2, minmax(100px,1fr)); }
+      .statWide { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="world forest" id="world">
+    <div class="sky"></div>
+    <div class="sun"></div>
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="sparkles" id="sparkles"></div>
+    <div class="orbs" id="orbs"></div>
+    <div class="scene" id="sceneBack"></div>
+    <div class="hill back"></div>
+    <div class="scene" id="sceneFront"></div>
+    <div class="hill front"></div>
+  </div>
+
+  <div class="startOverlay" id="startOverlay">
+    <div class="startPanel">
+      <h2 class="startTitle">Choose Your Age Level</h2>
+      <div class="startText">Pick the level that feels right. The game will automatically adjust the difficulty, pacing, and problem size for your child.</div>
+      <div class="levelGrid">
+        <div class="levelCard" data-level="young"><div class="levelName">Ages 3–4</div><div class="levelDesc">Small numbers, easier counting, very gentle pacing, and simple compare problems.</div></div>
+        <div class="levelCard" data-level="middle"><div class="levelName">Ages 4–5</div><div class="levelDesc">Balanced practice, medium-sized groups, and early multiplication and division ideas.</div></div>
+        <div class="levelCard" data-level="older"><div class="levelName">Ages 5–6</div><div class="levelDesc">Bigger groups, stronger challenge, and fuller practice across all operations.</div></div>
+      </div>
+      <div class="startActions">
+        <button class="startButton" id="startButton" disabled>Start Adventure</button>
+        <button class="ghostBtn" id="previewVoiceButton">Preview Voice</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="dashboard">
+      <div class="card hero">
+        <div class="eyebrow">✨ Visual Math • Voice Guide • Modern Kids UI</div>
+        <h1>Math Adventure Galaxy</h1>
+        <div class="subtitle">A modern math game for young children with glowing visuals, gentle pacing, nature worlds, and a friendly talking guide that helps them think through each problem.</div>
+        <div class="heroMeta">
+          <div class="miniPill">➕ Addition</div>
+          <div class="miniPill">➖ Subtraction</div>
+          <div class="miniPill">✖ Multiplication</div>
+          <div class="miniPill">➗ Division</div>
+          <div class="miniPill">🐊 Compare</div>
+        </div>
+      </div>
+      <div class="card stats">
+        <div class="statCard"><div class="statLabel">Score</div><div class="statValue" id="score">0</div></div>
+        <div class="statCard"><div class="statLabel">Streak</div><div class="statValue" id="streak">0</div></div>
+        <div class="statCard statWide"><div class="statLabel">Level</div><div class="levelBadge" id="levelBadge">Level: not selected yet</div></div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbarRow" role="group" aria-label="Math modes">
+        <button class="mode active" data-mode="addition">➕ Addition</button>
+        <button class="mode" data-mode="subtraction">➖ Subtraction</button>
+        <button class="mode" data-mode="multiplication">✖ Multiplication</button>
+        <button class="mode" data-mode="division">➗ Division</button>
+        <button class="mode" data-mode="compare">🐊 Compare</button>
+      </div>
+      <div class="toolbarRow" role="group" aria-label="App controls">
+        <button id="musicToggle" class="secondaryOn">🎵 Music ON</button>
+        <button id="voiceToggle" class="secondaryOn">🗣️ Voice ON</button>
+        <button id="replayVoice">🔁 Replay Voice</button>
+        <button id="voiceStyleToggle">🌟 Voice Style: Smooth</button>
+        <button id="newProblem">New Problem</button>
+      </div>
+    </div>
+
+    <div class="card game">
+      <div class="guideArea">
+        <div class="mascotShell">
+          <div class="mascotOrb">
+            <div class="mascotHalo"></div>
+            <div class="dog neutral lookRight" id="dog" aria-hidden="true">
+              <div class="tail"></div><div class="ear back"></div><div class="ear front"></div>
+              <div class="head"><div class="patch"></div><div class="eye back"></div><div class="eye front"></div><div class="cheek left"></div><div class="cheek right"></div><div class="snout"><div class="nose"></div><div class="mouth"></div><div class="tongue"></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="speechWrap">
+          <div class="speechBubble">
+            <div class="speechLabel">Guide Voice</div>
+            <div class="speechText" id="speechText"></div>
+            <div class="voiceMeta" id="voiceMeta">Waiting for voice...</div>
+          </div>
+        </div>
+      </div>
+      <div class="stage" id="stage"></div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="footerNote">Tip: if voice does not start right away, tap anywhere once so the browser allows audio.</div>
+    </div>
+  </div>
+
+  <script>
+    const MathAdventureApp = (() => {
+      const state = {
+        mode: "addition",
+        score: 0,
+        streak: 0,
+        musicOn: true,
+        voiceOn: true,
+        voiceStyle: "smooth",
+        currentAnswer: null,
+        followUp: false,
+        gameStarted: false,
+        currentLevel: null,
+        lastAddition: null,
+        lastSpeechText: "",
+        chosenLevelCard: null,
+        speechTimers: [],
+        musicTimer: null,
+        audioCtx: null,
+        voiceCache: [],
+        tutorialShown: { addition:false, subtraction:false, multiplication:false, division:false, compare:false }
+      };
+
+      const config = {
+        levels: {
+          young: { label:"Ages 3–4", addMin:1, addMax:3, subMinA:3, subMaxA:5, compMin:1, compMax:5, multGroupsMin:2, multGroupsMax:2, multPerMin:1, multPerMax:3, divPerOptions:[1,2], divBoxesMin:2, divBoxesMax:2 },
+          middle:{ label:"Ages 4–5", addMin:1, addMax:5, subMinA:4, subMaxA:8, compMin:1, compMax:8, multGroupsMin:2, multGroupsMax:3, multPerMin:2, multPerMax:4, divPerOptions:[2,3,4], divBoxesMin:2, divBoxesMax:3 },
+          older: { label:"Ages 5–6", addMin:1, addMax:7, subMinA:5, subMaxA:10, compMin:1, compMax:10, multGroupsMin:2, multGroupsMax:4, multPerMin:2, multPerMax:5, divPerOptions:[2,3,4,5], divBoxesMin:2, divBoxesMax:4 }
+        },
+        objects: ["🍎","🍌","🍓","⭐","🍪","🧸","🚗","🐠","🌸","🦋"],
+        complimentPool: ["Excellent!","Correct!","You got it!","Wonderful!","Great job!"],
+        praiseSpeechPool: ["Yes. That is correct!","Wonderful work!","Fantastic! You solved it!","Great job! Ready for the next one?"],
+        retrySpeechPool: ["Good try. Look at the boxes again.","Almost. Count slowly one more time.","Not quite. Try again.","You can do it. Look carefully."],
+        dogPhrases: ["Hi friend! I can help you think.","Remember to look at the boxes first.","Math is easier when we can see it.","Ready for another fun challenge?"]
+      };
+
+      const elements = {
+        stage: document.getElementById("stage"), answers: document.getElementById("answers"), feedback: document.getElementById("feedback"), dog: document.getElementById("dog"), speechText: document.getElementById("speechText"), voiceMeta: document.getElementById("voiceMeta"), world: document.getElementById("world"), sceneBack: document.getElementById("sceneBack"), sceneFront: document.getElementById("sceneFront"), sparkles: document.getElementById("sparkles"), orbs: document.getElementById("orbs"), levelBadge: document.getElementById("levelBadge"), startOverlay: document.getElementById("startOverlay"), startButton: document.getElementById("startButton"), score: document.getElementById("score"), streak: document.getElementById("streak"), musicToggle: document.getElementById("musicToggle"), voiceToggle: document.getElementById("voiceToggle"), voiceStyleToggle: document.getElementById("voiceStyleToggle"), replayVoice: document.getElementById("replayVoice"), previewVoiceButton: document.getElementById("previewVoiceButton")
+      };
+
+      function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+      function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+      function getLevel(){ return config.levels[state.currentLevel]; }
+      function updateScoreUI(){ elements.score.textContent=state.score; elements.streak.textContent=state.streak; }
+      function clearTimers(){ state.speechTimers.forEach(timer => clearTimeout(timer)); state.speechTimers=[]; }
+      function clearFeedback(){ elements.feedback.textContent=""; elements.feedback.className="feedback"; }
+      function clearGameArea(){ clearTimers(); document.querySelectorAll('.flyClone').forEach(node => node.remove()); elements.stage.innerHTML=""; elements.answers.innerHTML=""; clearFeedback(); }
+      function setDogMood(mood){ elements.dog.classList.remove("neutral","happy"); elements.dog.classList.add(mood); }
+      function triggerDogCelebrate(){ elements.dog.classList.remove("celebrate"); void elements.dog.offsetWidth; elements.dog.classList.add("celebrate"); }
+      function startDogTalking(){ elements.dog.classList.add("speaking"); }
+      function stopDogTalking(){ elements.dog.classList.remove("speaking"); }
+      function setDogDirection(direction="right"){ elements.dog.classList.remove("lookRight","lookLeft"); elements.dog.classList.add(direction === "left" ? "lookLeft" : "lookRight"); }
+
+      function makeObjects(symbol, count, options = {}) {
+        const moveTargets = options.moveTargets || false;
+        const startMovingAt = options.startMovingAt ?? null;
+        const hiddenTargets = options.hiddenTargets || false;
+        let html = "";
+        for (let i = 0; i < count; i++) {
+          const removeClass = moveTargets && startMovingAt !== null && i >= startMovingAt ? " removeTarget" : "";
+          const hiddenClass = hiddenTargets ? " subTarget hiddenTarget" : "";
+          html += `<span class="object${removeClass}${hiddenClass}">${symbol}</span>`;
+        }
+        return html;
+      }
+
+      function makeBox(count, symbol, options = {}) {
+        return `
+          <div class="box${options.extraClass ? ` ${options.extraClass}` : ""}">
+            <div class="numberLabel">${count}</div>
+            <div class="objects">
+              ${makeObjects(symbol, count, options)}
+            </div>
+          </div>
+        `;
+      }
+
+      function choices(correct, symbolMode=false){
+        if(symbolMode) return ["<",">","="].sort(() => Math.random() - 0.5);
+        const results=[correct];
+        while(results.length<4){ const value=Math.max(0, correct+rand(-3,3)); if(!results.includes(value)) results.push(value); }
+        return results.sort(() => Math.random() - 0.5);
+      }
+
+      function renderAnswers(list){
+        elements.answers.innerHTML="";
+        list.forEach(item => {
+          const button=document.createElement("button");
+          button.className="answerBtn";
+          button.textContent=item;
+          button.onclick=() => checkAnswer(item);
+          elements.answers.appendChild(button);
+        });
+      }
+
+      function loadVoices(){ if (!("speechSynthesis" in window)) return; state.voiceCache = window.speechSynthesis.getVoices(); }
+      function choosePreferredVoice(){
+        const voices = state.voiceCache.length ? state.voiceCache : (window.speechSynthesis?.getVoices?.() || []);
+        if(!voices.length) return null;
+        const preferredNames=["Microsoft Aria Online (Natural)","Microsoft Jenny Online (Natural)","Google US English","Samantha","Allison","Ava"];
+        const naturalVoice = voices.find(v => preferredNames.some(name => v.name.includes(name)));
+        if(naturalVoice) return naturalVoice;
+        const femaleEnglish = voices.find(v => /en-US|en_US|en-GB/i.test(v.lang) && /(female|samantha|zira|aria|jenny|ava|allison|google)/i.test(v.name));
+        if(femaleEnglish) return femaleEnglish;
+        return voices.find(v => /en/i.test(v.lang)) || voices[0];
+      }
+      function getSpeechSettings(){ return state.voiceStyle === "smooth" ? { rate:0.9, pitch:1.03, volume:1 } : { rate:0.84, pitch:1.08, volume:1 }; }
+      function updateVoiceMeta(voiceName="Browser speech"){ elements.voiceMeta.textContent = `Voice: ${voiceName} • Style: ${state.voiceStyle === "smooth" ? "Smooth" : "Story"}`; }
+      function animateSpeechWords(text){
+        clearTimers();
+        elements.speechText.innerHTML="";
+        const words=text.split(/\s+/);
+        const perWord=220;
+        const totalDuration=Math.max(1600, words.length*perWord + 550);
+        words.forEach((word, index) => {
+          const timer=setTimeout(() => {
+            const span=document.createElement("span");
+            span.className="word";
+            span.textContent=word;
+            elements.speechText.appendChild(span);
+            requestAnimationFrame(() => span.classList.add("show"));
+          }, index * perWord);
+          state.speechTimers.push(timer);
+        });
+        return totalDuration;
+      }
+      function speak(text){
+        if(!state.voiceOn) return;
+        if(!("speechSynthesis" in window)){ updateVoiceMeta("Speech not supported"); return; }
+        window.speechSynthesis.cancel();
+        loadVoices();
+        const msg=new SpeechSynthesisUtterance(text);
+        const chosenVoice=choosePreferredVoice();
+        const settings=getSpeechSettings();
+        if(chosenVoice) msg.voice=chosenVoice;
+        msg.rate=settings.rate; msg.pitch=settings.pitch; msg.volume=settings.volume;
+        updateVoiceMeta(chosenVoice ? chosenVoice.name : "Default browser voice");
+        msg.onstart=() => startDogTalking();
+        msg.onend=() => stopDogTalking();
+        msg.onerror=() => stopDogTalking();
+        window.speechSynthesis.speak(msg);
+      }
+      function setSpeech(text){
+        state.lastSpeechText=text;
+        setDogMood("neutral");
+        setDogDirection("right");
+        const duration=animateSpeechWords(text);
+        startDogTalking();
+        const stopTimer=setTimeout(() => stopDogTalking(), duration);
+        state.speechTimers.push(stopTimer);
+        speak(text);
+      }
+      function replaySpeech(){ if(!state.lastSpeechText) return; setSpeech(state.lastSpeechText); }
+
+      function createSparkles(){
+        elements.sparkles.innerHTML="";
+        for(let i=0;i<18;i++){
+          const sparkle=document.createElement("div");
+          sparkle.className="sparkle";
+          sparkle.style.left=rand(4,96)+"%";
+          sparkle.style.top=rand(6,64)+"%";
+          sparkle.style.animationDelay=(Math.random()*2.6).toFixed(2)+"s";
+          sparkle.style.width=rand(6,11)+"px";
+          sparkle.style.height=sparkle.style.width;
+          elements.sparkles.appendChild(sparkle);
+        }
+      }
+      function createOrbs(){
+        elements.orbs.innerHTML="";
+        for(let i=0;i<10;i++){
+          const orb=document.createElement("div");
+          orb.className="orb";
+          orb.style.left=rand(2,96)+"%";
+          orb.style.top=rand(8,74)+"%";
+          orb.style.width=rand(26,52)+"px";
+          orb.style.height=orb.style.width;
+          orb.style.animationDelay=(Math.random()*5).toFixed(2)+"s";
+          elements.orbs.appendChild(orb);
+        }
+      }
+      function setWorld(modeName){
+        const map={ addition:"forest", subtraction:"autumn", multiplication:"garden", division:"farm", compare:"jungle" };
+        const worldName=map[modeName] || "forest";
+        elements.world.className="world " + worldName;
+        renderScene(worldName);
+        createSparkles();
+        createOrbs();
+      }
+      function renderScene(name){
+        elements.sceneBack.innerHTML=""; elements.sceneFront.innerHTML="";
+        if(name === "forest"){ addTree(elements.sceneBack,10,56,"small"); addTree(elements.sceneBack,24,52,""); addTree(elements.sceneBack,78,57,"large"); addTree(elements.sceneBack,66,58,"small"); addBush(elements.sceneFront,8,82); addBush(elements.sceneFront,72,83); addFlower(elements.sceneFront,18,85,"🌼"); addFlower(elements.sceneFront,24,87,"🌸"); addFlower(elements.sceneFront,85,86,"🌷"); addAnimal(elements.sceneFront,56,82,"🦌"); addButterfly(elements.sceneBack,0,23); }
+        if(name === "autumn"){ addTree(elements.sceneBack,12,56,""); addTree(elements.sceneBack,29,58,"small"); addTree(elements.sceneBack,79,57,"large"); addBush(elements.sceneFront,14,83); addBush(elements.sceneFront,75,84); addAnimal(elements.sceneFront,58,83,"🦔"); addAnimal(elements.sceneFront,43,84,"🐿️"); for(let i=0;i<7;i++) addLeaf(elements.sceneBack, rand(0,90), rand(0,20)); }
+        if(name === "garden"){ addTree(elements.sceneBack,13,56,"small"); addTree(elements.sceneBack,81,56,""); addFlower(elements.sceneFront,10,85,"🌷"); addFlower(elements.sceneFront,18,87,"🌼"); addFlower(elements.sceneFront,27,86,"🌸"); addFlower(elements.sceneFront,74,87,"🌺"); addFlower(elements.sceneFront,82,85,"🌷"); addFlower(elements.sceneFront,90,87,"🌼"); addAnimal(elements.sceneFront,56,82,"🐝"); addButterfly(elements.sceneBack,0,24); }
+        if(name === "farm"){ addTree(elements.sceneBack,14,56,"small"); addTree(elements.sceneBack,79,56,""); addReed(elements.sceneFront,10,86); addReed(elements.sceneFront,13,86); addReed(elements.sceneFront,88,86); addReed(elements.sceneFront,91,86); addAnimal(elements.sceneFront,52,82,"🐄"); addAnimal(elements.sceneFront,39,83,"🐑"); addAnimal(elements.sceneFront,66,83,"🐓"); }
+        if(name === "jungle"){ addPalm(elements.sceneBack,10,55); addPalm(elements.sceneBack,80,56); addPalm(elements.sceneBack,23,60); addPalm(elements.sceneBack,68,61); addBush(elements.sceneFront,12,84); addBush(elements.sceneFront,77,84); addAnimal(elements.sceneFront,56,82,"🐊"); addAnimal(elements.sceneFront,34,84,"🐒"); addAnimal(elements.sceneFront,71,84,"🦜"); addButterfly(elements.sceneBack,0,23); }
+      }
+      function addTree(parent,left,bottom,size=""){ const el=document.createElement("div"); el.className="tree " + size; el.style.left=left+"%"; el.style.bottom=bottom+"%"; el.innerHTML=`<div class="trunk"></div><div class="top"></div>`; parent.appendChild(el); }
+      function addPalm(parent,left,bottom){ const el=document.createElement("div"); el.className="palm"; el.style.left=left+"%"; el.style.bottom=bottom+"%"; el.innerHTML=`<div class="trunk"></div><div class="leaf1"></div><div class="leaf2"></div><div class="leaf3"></div><div class="leaf4"></div><div class="leaf5"></div>`; parent.appendChild(el); }
+      function addFlower(parent,left,bottom,emoji){ const el=document.createElement("div"); el.className="flower"; el.style.left=left+"%"; el.style.bottom=bottom+"%"; el.textContent=emoji; parent.appendChild(el); }
+      function addReed(parent,left,bottom){ const el=document.createElement("div"); el.className="reed"; el.style.left=left+"%"; el.style.bottom=bottom+"%"; parent.appendChild(el); }
+      function addBush(parent,left,bottom){ const el=document.createElement("div"); el.className="bush"; el.style.left=left+"%"; el.style.bottom=bottom+"%"; parent.appendChild(el); }
+      function addAnimal(parent,left,bottom,emoji){ const el=document.createElement("div"); el.className="animal"; el.style.left=left+"%"; el.style.bottom=bottom+"%"; el.textContent=emoji; parent.appendChild(el); }
+      function addButterfly(parent,left,top){ const el=document.createElement("div"); el.className="butterfly"; el.style.left=left+"%"; el.style.top=top+"%"; el.textContent="🦋"; parent.appendChild(el); }
+      function addLeaf(parent,left,top){ const el=document.createElement("div"); el.className="leaf"; el.style.left=left+"%"; el.style.top=top+"%"; el.textContent=pick(["🍂","🍁"]); parent.appendChild(el); }
+
+      function getSpeechCueDelay(text, cuePhrase, perWord=220, extraDelay=220){
+        const words=text.split(/\s+/); const cueWords=cuePhrase.split(/\s+/); let cueIndex=-1;
+        for(let i=0;i<=words.length-cueWords.length;i++){
+          const slice=words.slice(i, i+cueWords.length).join(" ").toLowerCase();
+          if(slice === cuePhrase.toLowerCase()){ cueIndex=i; break; }
+        }
+        if(cueIndex === -1) return 1200;
+        return cueIndex * perWord + extraDelay;
+      }
+
+      function animateTransferInStage(stageRoot, onDone, stepDelay=620){
+        const sources=[...stageRoot.querySelectorAll('.removeTarget')];
+        const targets=[...stageRoot.querySelectorAll('.subTarget')];
+        if(!sources.length || !targets.length){ if(onDone) onDone(); return; }
+        let index=0;
+        const moveNext=() => {
+          if(index >= sources.length || index >= targets.length){ if(onDone) onDone(); return; }
+          const source=sources[index];
+          const target=targets[index];
+          const sourceRect=source.getBoundingClientRect();
+          const targetRect=target.getBoundingClientRect();
+          const clone=source.cloneNode(true);
+          clone.className='flyClone';
+          clone.style.left=`${sourceRect.left}px`;
+          clone.style.top=`${sourceRect.top}px`;
+          clone.style.width=`${sourceRect.width}px`;
+          clone.style.height=`${sourceRect.height}px`;
+          clone.style.opacity='1';
+          document.body.appendChild(clone);
+          source.classList.add('sourceRemoved');
+          requestAnimationFrame(() => {
+            clone.style.transform=`translate(${targetRect.left - sourceRect.left}px, ${targetRect.top - sourceRect.top - 18}px) scale(.9)`;
+            clone.style.opacity='.95';
+          });
+          const cleanupTimer=setTimeout(() => {
+            clone.remove();
+            target.classList.remove('hiddenTarget');
+            index++;
+            moveNext();
+          }, stepDelay);
+          state.speechTimers.push(cleanupTimer);
+        };
+        moveNext();
+      }
+
+      function renderSubtractionLayout(a, b, symbol){
+        return `
+          <div class="boxes subtractionFlow">
+            ${makeBox(a, symbol, { moveTargets:true, startMovingAt:a-b })}
+            <div class="mathSign">−</div>
+            <div class="faintBox">${makeBox(b, symbol, { hiddenTargets:true })}</div>
+          </div>
+        `;
+      }
+
+      function showExampleForMode(selectedMode){
+        clearGameArea();
+        setWorld(selectedMode);
+        state.tutorialShown[selectedMode]=true;
+        setDogMood("neutral");
+
+        if(selectedMode === "addition"){
+          setSpeech("Example time. Here we have two apples and one apple. We count both boxes together. Two and one make three.");
+          elements.stage.innerHTML=`<div class="exampleCard"><div class="exampleTitle">Addition Example</div><div class="boxes">${makeBox(2,"🍎")}<div class="mathSign">+</div>${makeBox(1,"🍎")}<div class="mathSign">=</div>${makeBox(3,"🍎")}</div><div class="exampleText">We count the first box, then the second box, and put them together. That gives us the total.</div><div class="exampleFooter"><button class="primaryBtn" id="startPracticeBtn">Start Addition Practice</button></div></div>`;
+        }
+
+        if(selectedMode === "subtraction"){
+          const exampleSpeech="Example time. We start with five stars. We take away two stars. Watch the two removed stars float to the second box. Three bright stars stay in the first box.";
+          setSpeech(exampleSpeech);
+          elements.stage.innerHTML=`
+            <div class="exampleCard">
+              <div class="exampleTitle">Subtraction Example</div>
+              ${renderSubtractionLayout(5, 2, "⭐")}
+              <div class="mathSign">=</div>
+              ${makeBox(3, "⭐")}
+              <div class="exampleText">Subtraction means taking some away. The removed objects float to the second box, and the bright objects that stay show the answer.</div>
+              <div class="exampleFooter"><button class="primaryBtn" id="startPracticeBtn">Start Subtraction Practice</button></div>
+            </div>
+          `;
+          const exampleDelay=getSpeechCueDelay(exampleSpeech, "take away", 220, 180);
+          const exampleTimer=setTimeout(() => {
+            animateTransferInStage(elements.stage);
+          }, exampleDelay);
+          state.speechTimers.push(exampleTimer);
+        }
+
+        if(selectedMode === "multiplication"){
+          setSpeech("Example time. Here we have three boxes, and each box has two flowers. We count all the flowers. Three groups of two make six.");
+          elements.stage.innerHTML=`<div class="exampleCard"><div class="exampleTitle">Multiplication Example</div><div class="problemTitle">3 × 2 = ?</div><div class="boxes">${makeBox(2,"🌸")}${makeBox(2,"🌸")}${makeBox(2,"🌸")}</div><div class="exampleText">Multiplication means equal groups. We count the same-size groups together.</div><div class="exampleFooter"><button class="primaryBtn" id="startPracticeBtn">Start Multiplication Practice</button></div></div>`;
+        }
+
+        if(selectedMode === "division"){
+          setSpeech("Example time. Here are six apples. We put two apples in each box. That makes three boxes. So six divided by two equals three boxes.");
+          elements.stage.innerHTML=`<div class="exampleCard"><div class="exampleTitle">Division Example</div><div class="problemTitle">6 ÷ 2 = ?</div><div class="boxes">${makeBox(2,"🍎")}${makeBox(2,"🍎")}${makeBox(2,"🍎")}</div><div class="exampleText">Division means making equal boxes. We ask: how many boxes can we make?</div><div class="exampleFooter"><button class="primaryBtn" id="startPracticeBtn">Start Division Practice</button></div></div>`;
+        }
+
+        if(selectedMode === "compare"){
+          setSpeech("Example time. Here the first box has four bears and the second box has two bears. Four is bigger than two, so the correct sign is greater than.");
+          elements.stage.innerHTML=`<div class="exampleCard"><div class="exampleTitle">Compare Example</div><div class="boxes">${makeBox(4,"🧸")}<div class="mathSign">></div>${makeBox(2,"🧸")}</div><div class="exampleText">The open side of the sign points to the bigger group.</div><div class="exampleFooter"><button class="primaryBtn" id="startPracticeBtn">Start Compare Practice</button></div></div>`;
+        }
+
+        elements.answers.innerHTML="";
+        document.getElementById("startPracticeBtn").onclick=() => newProblem(true);
+      }
+
+      function addition(){
+        clearGameArea(); setWorld("addition"); state.followUp=false; setDogMood("neutral");
+        const level=getLevel(); const a=rand(level.addMin, level.addMax); const b=rand(level.addMin, level.addMax); const symbol=pick(config.objects);
+        state.currentAnswer=a+b; state.lastAddition={ a, b, total:a+b, symbol };
+        setSpeech(`To do ${a} plus ${b}, count the first box and count the second box. How many objects are there altogether?`);
+        elements.stage.innerHTML=`<div class="boxes">${makeBox(a, symbol)}<div class="mathSign">+</div>${makeBox(b, symbol)}</div>`;
+        renderAnswers(choices(state.currentAnswer));
+        startMusic("addition");
+      }
+
+      function subtraction(){
+        clearGameArea(); setWorld("subtraction"); state.followUp=false; setDogMood("neutral");
+        const level=getLevel(); const a=rand(level.subMinA, level.subMaxA); const b=rand(1, a-1); const symbol=pick(config.objects);
+        state.currentAnswer=a-b;
+        const speech=`To do ${a} minus ${b}, start with the first box. Watch ${b} objects get taken away and float to the second box. How many bright objects are left?`;
+        elements.stage.innerHTML=renderSubtractionLayout(a, b, symbol);
+        setSpeech(speech);
+        startMusic("subtraction");
+        const cueDelay=getSpeechCueDelay(speech, "taken away", 220, 150);
+        const startTimer=setTimeout(() => {
+          animateTransferInStage(elements.stage, () => {
+            renderAnswers(choices(state.currentAnswer));
+          }, 620);
+        }, cueDelay);
+        state.speechTimers.push(startTimer);
+      }
+
+      function multiplication(){
+        clearGameArea(); setWorld("multiplication"); state.followUp=false; setDogMood("neutral");
+        const level=getLevel(); const groups=rand(level.multGroupsMin, level.multGroupsMax); const per=rand(level.multPerMin, level.multPerMax); const symbol=pick(config.objects);
+        state.currentAnswer=groups*per;
+        setSpeech(`To do ${groups} times ${per}, count how many boxes there are and how many objects are in each box. Then find the total.`);
+        let html=`<div class="problemTitle">${groups} × ${per} = ?</div><div class="boxes">`; for(let i=0;i<groups;i++) html += makeBox(per, symbol); html += `</div>`;
+        elements.stage.innerHTML=html;
+        renderAnswers(choices(state.currentAnswer));
+        startMusic("multiplication");
+      }
+
+      function division(){
+        clearGameArea(); setWorld("division"); state.followUp=false; setDogMood("neutral");
+        const level=getLevel(); const perBox=pick(level.divPerOptions); const boxCount=rand(level.divBoxesMin, level.divBoxesMax); const total=perBox*boxCount; const symbol=pick(config.objects);
+        state.currentAnswer=boxCount;
+        setSpeech(`To do ${total} divided by ${perBox}, look at the boxes. Each box has ${perBox} objects. Count how many boxes there are.`);
+        let html=`<div class="problemTitle">${total} ÷ ${perBox} = ?</div><div class="boxes">`; for(let i=0;i<boxCount;i++) html += makeBox(perBox, symbol); html += `</div>`;
+        elements.stage.innerHTML=html;
+        renderAnswers(choices(state.currentAnswer));
+        startMusic("division");
+      }
+
+      function compareMode(){
+        clearGameArea(); setWorld("compare"); state.followUp=false; setDogMood("neutral");
+        const level=getLevel(); const a=rand(level.compMin, level.compMax); const b=rand(level.compMin, level.compMax); const symbol=pick(config.objects);
+        state.currentAnswer=a > b ? ">" : a < b ? "<" : "=";
+        setSpeech(`Compare ${a} and ${b}. Look at both boxes carefully and choose the correct sign.`);
+        elements.stage.innerHTML=`<div class="boxes">${makeBox(a, symbol)}<div class="mathSign">?</div>${makeBox(b, symbol)}</div>`;
+        renderAnswers(choices(state.currentAnswer, true));
+        startMusic("compare");
+      }
+
+      function additionFollowUp(){
+        clearGameArea(); setWorld("compare"); state.followUp=true; setDogMood("neutral");
+        const result=state.lastAddition.total; const first=state.lastAddition.a; const symbol=state.lastAddition.symbol;
+        state.currentAnswer=result > first ? ">" : result < first ? "<" : "=";
+        setSpeech(`Now compare ${result} and ${first}. Which sign belongs in the middle?`);
+        elements.stage.innerHTML=`<div class="boxes">${makeBox(result, symbol)}<div class="mathSign">?</div>${makeBox(first, symbol)}</div>`;
+        renderAnswers(["<",">","="].sort(() => Math.random() - 0.5));
+        startMusic("compare");
+      }
+
+      function newProblem(skipTutorialCheck=false){
+        if(!state.gameStarted || !state.currentLevel) return;
+        if(!skipTutorialCheck && !state.tutorialShown[state.mode]){ showExampleForMode(state.mode); return; }
+        if(state.mode === "addition") addition();
+        if(state.mode === "subtraction") subtraction();
+        if(state.mode === "multiplication") multiplication();
+        if(state.mode === "division") division();
+        if(state.mode === "compare") compareMode();
+      }
+
+      function checkAnswer(answer){
+        if(answer === state.currentAnswer){
+          setDogMood("happy"); triggerDogCelebrate();
+          elements.feedback.textContent=pick(config.complimentPool); elements.feedback.className="feedback good";
+          state.score += 10; state.streak++; updateScoreUI();
+          setSpeech(pick(config.praiseSpeechPool));
+          const shouldDoAdditionFollowUp=state.mode === "addition" && !state.followUp && Math.random() < 0.40;
+          if(shouldDoAdditionFollowUp){ setTimeout(() => additionFollowUp(), 1500); }
+          else { setTimeout(() => { setDogMood("neutral"); newProblem(true); }, 1600); }
+        } else {
+          setDogMood("neutral"); elements.feedback.textContent="Try again. Look carefully."; elements.feedback.className="feedback bad"; state.streak=0; updateScoreUI(); setSpeech(pick(config.retrySpeechPool));
+        }
+      }
+
+      function ensureAudioContext(){
+        if(!state.audioCtx){ const AudioCtx=window.AudioContext || window.webkitAudioContext; if(!AudioCtx) return null; state.audioCtx=new AudioCtx(); }
+        return state.audioCtx;
+      }
+      function playNote(freq, duration, type="sine", volume=.05){
+        const audioCtx=ensureAudioContext(); if(!audioCtx) return;
+        const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain();
+        osc.type=type; osc.frequency.value=freq;
+        gain.gain.setValueAtTime(.001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(volume, audioCtx.currentTime + .02);
+        gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
+      }
+      function startMusic(type){
+        if(!state.musicOn) return; stopMusic(); const audioCtx=ensureAudioContext(); if(!audioCtx) return;
+        const patterns={
+          addition:{ melody:[523,659,784,988,1046,988,880,784], harmony:[784,988,1174,1318], bass:[262,330,392,294], sparkle:[1568,1760,1976] },
+          subtraction:{ melody:[494,523,587,523,440,392,440,523], harmony:[740,698,659,587], bass:[247,220,196,220], sparkle:[1174,1318,1396] },
+          multiplication:{ melody:[440,554,659,740,880,988,880,740], harmony:[659,740,880,988], bass:[220,277,330,370], sparkle:[1318,1480,1760] },
+          division:{ melody:[392,494,587,659,784,659,587,494], harmony:[587,659,784,880], bass:[196,247,262,294], sparkle:[1174,1318,1568] },
+          compare:{ melody:[330,392,523,587,659,587,523,392], harmony:[523,659,784,659], bass:[165,196,220,262], sparkle:[1046,1174,1318] }
+        };
+        const selected=patterns[type] || patterns.addition;
+        let step=0;
+        state.musicTimer=setInterval(() => {
+          const melody=selected.melody[step % selected.melody.length];
+          const harmony=selected.harmony[step % selected.harmony.length];
+          const bass=selected.bass[step % selected.bass.length];
+          const sparkle=selected.sparkle[step % selected.sparkle.length];
+          playNote(melody, 0.18, step % 2 === 0 ? "triangle" : "sine", 0.04);
+          setTimeout(() => playNote(harmony, 0.14, "sine", 0.02), 60);
+          setTimeout(() => playNote(bass, 0.24, "triangle", 0.024), 20);
+          if(step % 2 === 0){ setTimeout(() => playNote(sparkle, 0.07, "square", 0.01), 130); }
+          if(step % 4 === 1){ setTimeout(() => playNote(melody * 2, 0.08, "sine", 0.013), 110); }
+          if(step % 8 === 7){ setTimeout(() => playNote(harmony * 1.5, 0.14, "triangle", 0.017), 90); }
+          step++;
+        }, 210);
+      }
+      function stopMusic(){ if(state.musicTimer){ clearInterval(state.musicTimer); state.musicTimer=null; } }
+
+      function bindEvents(){
+        document.querySelectorAll(".mode").forEach(button => {
+          button.onclick=() => {
+            document.querySelectorAll(".mode").forEach(b => b.classList.remove("active"));
+            button.classList.add("active");
+            state.mode=button.dataset.mode;
+            if(state.gameStarted) newProblem();
+          };
+        });
+        document.getElementById("newProblem").onclick=() => newProblem(true);
+        elements.musicToggle.onclick=() => { state.musicOn=!state.musicOn; elements.musicToggle.textContent=state.musicOn ? "🎵 Music ON" : "🔇 Music OFF"; elements.musicToggle.classList.toggle("secondaryOn", state.musicOn); if(!state.musicOn) stopMusic(); else startMusic(state.mode); };
+        elements.voiceToggle.onclick=() => { state.voiceOn=!state.voiceOn; elements.voiceToggle.textContent=state.voiceOn ? "🗣️ Voice ON" : "🤫 Voice OFF"; elements.voiceToggle.classList.toggle("secondaryOn", state.voiceOn); if(!state.voiceOn && "speechSynthesis" in window){ window.speechSynthesis.cancel(); stopDogTalking(); updateVoiceMeta("Voice muted"); } else { updateVoiceMeta(choosePreferredVoice()?.name || "Default browser voice"); } };
+        elements.voiceStyleToggle.onclick=() => { state.voiceStyle=state.voiceStyle === "smooth" ? "story" : "smooth"; elements.voiceStyleToggle.textContent=`🌟 Voice Style: ${state.voiceStyle === "smooth" ? "Smooth" : "Story"}`; updateVoiceMeta(choosePreferredVoice()?.name || "Default browser voice"); if(state.lastSpeechText && state.voiceOn) replaySpeech(); };
+        elements.replayVoice.onclick=() => replaySpeech();
+        elements.previewVoiceButton.onclick=() => setSpeech("Hi there. Welcome to Math Adventure Galaxy. I can help your child think through each problem.");
+        elements.dog.onclick=() => setSpeech(pick(config.dogPhrases));
+        document.querySelectorAll(".levelCard").forEach(card => {
+          card.onclick=() => {
+            document.querySelectorAll(".levelCard").forEach(c => c.classList.remove("selected"));
+            card.classList.add("selected");
+            state.chosenLevelCard=card.dataset.level;
+            elements.startButton.disabled=false;
+          };
+        });
+        elements.startButton.onclick=() => {
+          if(!state.chosenLevelCard) return;
+          state.currentLevel=state.chosenLevelCard;
+          elements.levelBadge.textContent="Level: " + config.levels[state.currentLevel].label;
+          elements.startOverlay.style.display="none";
+          state.gameStarted=true;
+          setWorld("addition");
+          updateScoreUI();
+          newProblem();
+        };
+        document.body.addEventListener("click", async () => {
+          const audioCtx=ensureAudioContext();
+          if(audioCtx && audioCtx.state === "suspended"){
+            try { await audioCtx.resume(); } catch(e) {}
+          }
+        }, { passive:true });
+        if("speechSynthesis" in window){
+          window.speechSynthesis.onvoiceschanged=() => {
+            loadVoices();
+            updateVoiceMeta(choosePreferredVoice()?.name || "Default browser voice");
+          };
+        }
+      }
+
+      function init(){
+        setWorld("addition");
+        createSparkles();
+        createOrbs();
+        bindEvents();
+        loadVoices();
+        updateVoiceMeta(choosePreferredVoice()?.name || "Default browser voice");
+        elements.speechText.innerHTML=`<span class="word show">Choose</span><span class="word show">an</span><span class="word show">age</span><span class="word show">level</span><span class="word show">to</span><span class="word show">begin.</span>`;
+      }
+
+      return { init };
+    })();
+
+    MathAdventureApp.init();
+  </script>
+</body>
+</html>
