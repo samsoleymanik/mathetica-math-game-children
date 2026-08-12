@@ -1,0 +1,13 @@
+Math Adventure Galaxy
+
+© 2026 Sam Soleymani. All rights reserved.
+
+This software, including its source code, visual design, animations,
+instructional structure, and original presentation elements, is protected
+by copyright.
+
+Unauthorized copying, modification, redistribution, publication, resale,
+sublicensing, or commercial use is prohibited without prior written
+permission from Sam Soleymani.
+
+No open-source license is granted by the presence of this repository.
